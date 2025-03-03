@@ -1,4 +1,4 @@
-# peptide_signature_finder
+# Peptide Signature Finder
 
 Let me create a comprehensive GitHub repository documentation with visuals for your mass spectrometry analysis code.
 
