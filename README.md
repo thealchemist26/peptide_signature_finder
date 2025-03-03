@@ -1,10 +1,6 @@
 # Peptide Signature Finder
 
-Let me create a comprehensive GitHub repository documentation with visuals for your mass spectrometry analysis code.
-
-#  Mass Spectrometry Peptide Analyzer
-
-A Python tool for analyzing mass spectrometry data using bottom-up proteomics approach, featuring interactive file selection and peptide signature matching.
+A Python tool for analysing mass spectrometry data using bottom-up proteomics approach, featuring interactive file selection and peptide signature matching.
 
 ##  Workflow Overview
 
