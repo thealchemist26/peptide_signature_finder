@@ -1,100 +1,178 @@
 # peptide_signature_finder
 
-import pandas as pd
-from tkinter import Tk
-from tkinter.filedialog import askopenfilename
-import numpy as np
+Let me create a comprehensive GitHub repository documentation with visuals for your mass spectrometry analysis code.
 
-# Function to select files interactively
-def select_file(prompt="Select CSV file"):
-    """Interactive file selection dialog"""
-    Tk().withdraw()  # Prevents empty Tk window
-    return askopenfilename(title=prompt, filetypes=[("CSV Files", "*.csv")])
+#  Mass Spectrometry Peptide Analyzer
 
-# Function to read and validate mass spectrometry data
-def read_ms_data(filepath):
-    """Read and validate mass spectrometry data"""
-    try:
-        df = pd.read_csv(filepath)
-        
-        # Ensure required columns exist
-        required_columns = ['m/z', 'intensity']
-        if not all(col.lower() in df.columns.str.lower() for col in required_columns):
-            raise ValueError("CSV must contain 'm/z' and 'intensity' columns")
-            
-        # Standardize column names
-        df.columns = [col.lower().strip() for col in df.columns]
-        df = df.rename(columns={'mass': 'm/z'})
-        
-        return df
-    except Exception as e:
-        print(f"Error reading file: {str(e)}")
-        return None
+A Python tool for analyzing mass spectrometry data using bottom-up proteomics approach, featuring interactive file selection and peptide signature matching.
 
-# Function to match peptides
-def match_peptides(sample_data, reference_data, tolerance_ppm=10):
-    """Match peptides within specified ppm tolerance"""
-    matches = []
-    
-    for _, ref_row in reference_data.iterrows():
-        ref_mz = ref_row['m/z']
-        
-        # Calculate ppm difference for each sample peak
-        sample_data['ppm_diff'] = abs((sample_data['m/z'] - ref_mz) / ref_mz * 1000000)
-        
-        # Find closest match within tolerance
-        closest_match = sample_data[sample_data['ppm_diff'] <= tolerance_ppm].sort_values('ppm_diff')
-        
-        if not closest_match.empty:
-            best_match = closest_match.iloc[0]
-            matches.append({
-                'peptide_signature': ref_row['peptide_signature'],
-                'reference_mz': ref_mz,
-                'matched_mz': best_match['m/z'],
-                'intensity': best_match['intensity'],
-                'ppm_difference': best_match['ppm_diff']
-            })
-    
-    return pd.DataFrame(matches)
+##  Workflow Overview
 
-# Main analysis function
-def analyze_mass_spec_data():
-    """Main function to analyze mass spectrometry data"""
-    print("Select sample data file...")
-    sample_path = select_file("Select Sample Data CSV")
-    if not sample_path:
-        return
-    
-    print("Select reference peptide signatures file...")
-    ref_path = select_file("Select Reference Peptides CSV")
-    if not ref_path:
-        return
-    
-    # Read sample data
-    sample_df = read_ms_data(sample_path)
-    if sample_df is None:
-        return
-    
-    # Read reference data
-    ref_df = pd.read_csv(ref_path)
-    if 'peptide_signature' not in ref_df.columns:
-        print("Error: Reference file must contain 'peptide_signature' column")
-        return
-    
-    # Perform matching
-    tolerance_ppm = float(input("Enter ppm tolerance for matching (default 10): ") or 10)
-    matches_df = match_peptides(sample_df, ref_df, tolerance_ppm)
-    
-    # Save results
-    if not matches_df.empty:
-        output_path = "filtered_peptides.csv"
-        matches_df.to_csv(output_path, index=False)
-        print(f"\nResults saved to: {output_path}")
-        print("\nMatched peptides:")
-        print(matches_df[['peptide_signature', 'reference_mz', 'matched_mz', 'ppm_difference']])
-    else:
-        print("\nNo matches found within specified tolerance.")
+The tool processes mass spectrometry data through several key steps:
 
-# Run analysis
-if __name__ == "__main__":
-    analyze_mass_spec_data()
+```mermaid
+flowchart LR
+    subgraph Input
+        direction TB
+        Sample["Sample Data CSV
+        • m/z values
+        • intensity values"]
+        Reference["Reference CSV
+        • peptide signatures
+        • m/z values"]
+    end
+    
+    subgraph Processing
+        direction TB
+        ReadSample["Read Sample Data
+        pd.read_csv()"]
+        ReadRef["Read Reference File
+        pd.read_csv()"]
+        
+        Match["Match Signatures
+        within tolerance"]
+        
+        Filter["Filter Matches
+        based on criteria"]
+    end
+    
+    subgraph Output
+        Save["Save Results
+        filtered_peptides.csv"]
+    end
+    
+    Sample --> ReadSample
+    Reference --> ReadRef
+    ReadSample --> Match
+    ReadRef --> Match
+    Match --> Filter
+    Filter --> Save
+    
+    style Input fill:#f9f9f9,stroke:#666,color:#000000
+    style Processing fill:#e6f3ff,stroke:#666,color:#000000
+    style Output fill:#f0fff0,stroke:#666,color:#000000
+```
+
+##  Installation
+
+To use this tool, install the required dependencies:
+
+```bash
+pip install pandas numpy
+```
+
+##  Features
+
+- Interactive CSV file selection using tkinter dialogs
+- Automatic validation of mass spectrometry data format
+- Configurable ppm tolerance for peptide matching
+- Comprehensive error handling
+- Clear output showing matched peptides and their properties
+
+##  Usage
+
+The tool can be run directly from the command line:
+
+```bash
+python mass_spectra_analyzer.py
+```
+
+This will launch an interactive session where you'll be prompted to:
+
+1. Select your sample data CSV file
+2. Select your reference peptide signatures CSV file
+3. Enter the desired ppm tolerance (default: 10)
+
+##  Required File Formats
+
+**Sample Data CSV**
+
+- Must contain two columns:
+  - m/z values (may be labeled as 'mass')
+  - intensity values
+
+
+- Example:
+
+```csv
+m/z,intensity
+100.0,500
+101.0,300
+102.0,800
+```
+
+**Reference Peptides CSV**
+
+- Must contain:
+  - peptide_signature column (unique identifier for each peptide)
+  - m/z values column
+
+
+- Example:
+
+```csv
+peptide_signature,m/z
+PEPTIDE1,100.5
+PEPTIDE2,201.3
+PEPTIDE3,302.7
+```
+
+##  Technical Details
+
+The tool uses several key functions to process the data:
+
+1. **File Selection**  - Uses tkinter's file dialog for interactive file selection
+  - Filters for CSV files only
+  - Prevents empty window display
+
+
+2. **Data Validation**  - Checks for required columns in sample data
+  - Standardizes column names
+  - Handles missing or malformed data
+
+
+3. **Peptide Matching**  - Calculates ppm differences between sample and reference peaks
+  - Finds closest matches within specified tolerance
+  - Returns comprehensive match information including:
+    - Peptide signature
+    - Reference m/z value
+    - Matched m/z value
+    - Intensity
+    - PPM difference
+
+
+
+##  Output
+
+Results are saved to `filtered_peptides.csv` containing all matched peptides with their properties. The output includes:
+
+- Peptide signatures
+- Reference m/z values
+- Matched m/z values
+- Intensity values
+- PPM differences
+
+##  Contributing
+
+Contributions are welcome! To contribute:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+##  License
+
+This project is licensed under the MIT License. See `LICENSE` for details.
+
+##  Acknowledgments
+
+The tool uses:
+
+- pandas for data manipulation
+- numpy for numerical operations
+- tkinter for file dialogs
+
+
+   
+   
